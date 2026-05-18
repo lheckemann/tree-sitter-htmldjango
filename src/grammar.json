@@ -1028,11 +1028,16 @@
           "value": "%}"
         },
         {
-          "type": "REPEAT",
+          "type": "ALIAS",
           "content": {
-            "type": "SYMBOL",
-            "name": "_node"
-          }
+            "type": "REPEAT",
+            "content": {
+              "type": "SYMBOL",
+              "name": "_node"
+            }
+          },
+          "named": true,
+          "value": "if_body"
         },
         {
           "type": "REPEAT",
@@ -1049,11 +1054,16 @@
                 "value": "branch_statement"
               },
               {
-                "type": "REPEAT",
+                "type": "ALIAS",
                 "content": {
-                  "type": "SYMBOL",
-                  "name": "_node"
-                }
+                  "type": "REPEAT",
+                  "content": {
+                    "type": "SYMBOL",
+                    "name": "_node"
+                  }
+                },
+                "named": true,
+                "value": "elif_body"
               }
             ]
           }
@@ -1074,11 +1084,16 @@
                   "value": "branch_statement"
                 },
                 {
-                  "type": "REPEAT",
+                  "type": "ALIAS",
                   "content": {
-                    "type": "SYMBOL",
-                    "name": "_node"
-                  }
+                    "type": "REPEAT",
+                    "content": {
+                      "type": "SYMBOL",
+                      "name": "_node"
+                    }
+                  },
+                  "named": true,
+                  "value": "else_body"
                 }
               ]
             },
