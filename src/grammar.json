@@ -1056,7 +1056,7 @@
               {
                 "type": "ALIAS",
                 "content": {
-                  "type": "REPEAT",
+                  "type": "REPEAT1",
                   "content": {
                     "type": "SYMBOL",
                     "name": "_node"
@@ -1086,7 +1086,7 @@
                 {
                   "type": "ALIAS",
                   "content": {
-                    "type": "REPEAT",
+                    "type": "REPEAT1",
                     "content": {
                       "type": "SYMBOL",
                       "name": "_node"

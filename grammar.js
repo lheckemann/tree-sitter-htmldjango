@@ -106,11 +106,11 @@ module.exports = grammar({
       alias(repeat($._node), $.if_body),
       repeat((seq(
         alias($.elif_statement, $.branch_statement),
-        alias(repeat($._node), $.elif_body),
+        alias(repeat1($._node), $.elif_body),
       ))),
       optional(seq(
         alias($.else_statement, $.branch_statement),
-        alias(repeat($._node), $.else_body),
+        alias(repeat1($._node), $.else_body),
       )),
       "{%", alias("endif", $.tag_name), alias("%}", $.end_paired_statement),
     ),
