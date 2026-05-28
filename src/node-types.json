@@ -320,12 +320,42 @@
     "type": "tag",
     "named": true,
     "fields": {
+      "binding": {
+        "multiple": true,
+        "required": false,
+        "types": [
+          {
+            "type": "binding",
+            "named": true
+          }
+        ]
+      },
       "block_name": {
         "multiple": false,
         "required": false,
         "types": [
           {
             "type": "identifier",
+            "named": true
+          }
+        ]
+      },
+      "context": {
+        "multiple": true,
+        "required": false,
+        "types": [
+          {
+            "type": "string",
+            "named": true
+          }
+        ]
+      },
+      "count": {
+        "multiple": true,
+        "required": false,
+        "types": [
+          {
+            "type": "expression",
             "named": true
           }
         ]
@@ -489,11 +519,29 @@
             "named": false
           },
           {
+            "type": "trans",
+            "named": false
+          },
+          {
+            "type": "translate",
+            "named": false
+          },
+          {
             "type": "verbatim",
             "named": false
           },
           {
             "type": "with",
+            "named": false
+          }
+        ]
+      },
+      "trimmed": {
+        "multiple": true,
+        "required": false,
+        "types": [
+          {
+            "type": "trimmed",
             "named": false
           }
         ]
@@ -858,6 +906,14 @@
   {
     "type": "special_identifier",
     "named": true
+  },
+  {
+    "type": "trans",
+    "named": false
+  },
+  {
+    "type": "translate",
+    "named": false
   },
   {
     "type": "trimmed",

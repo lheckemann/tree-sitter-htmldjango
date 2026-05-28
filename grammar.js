@@ -62,6 +62,8 @@ const TAGS = [
     field("grouping_criterion", $.identifier),
     $.tag_binding
   )},
+  {name: "trans", args: $ => seq($.string, repeat($._translate_arg))},
+  {name: "translate", args: $ => seq($.string, repeat($._translate_arg))},
   ...BLOCKS,
   ...(BLOCKS.map(({name, end_args}) => ({name: `end${name}`, args: end_args}))),
 ]
@@ -143,7 +145,7 @@ module.exports = grammar({
       seq('"', repeat(/[^"]|\\"/), '"')
     ),
 
-    identifier: $ => /[\w-]+/,
+    identifier: $ => /[\w_-]+/,
     attribute_path: $ => seq($.identifier, repeat1(seq(".", $.identifier))),
 
     filter: $ => seq(
@@ -183,6 +185,8 @@ module.exports = grammar({
       $._extends_tag,
       $._load_tag,
       $._regroup_tag,
+      $._trans_tag,
+      $._translate_tag,
     ),
 
     _known_block: $ => choice(
@@ -231,18 +235,23 @@ module.exports = grammar({
     ),
 
     _blocktranslate_arg: $ => choice(
-      seq("with", repeat1($.binding)),
-      seq("count", $.binding),
-      seq("context", $.string),
-      "trimmed",
+      $._with_bindings,
+      seq("count", field("count", choice(field("binding", $.binding), $.expression))),
+      seq("context", field("context", $.string)),
+      field("trimmed", "trimmed"),
     ),
+    _translate_arg: $ => choice(
+      $.tag_binding,
+      seq("context", field("context", $.string)),
+    ),
+
     _equals_binding: $ => seq(field("name", $.identifier), "=", field("value", $.expression)),
     binding: $ => choice(
       seq(field("value", $.expression), "as", field("name", $.identifier)),
       $._equals_binding
     ),
 
-    _with_bindings: $ => seq("with", repeat1($.binding)),
+    _with_bindings: $ => seq("with", field("binding", repeat1($.binding))),
 
     tag_binding: $ => seq("as", field("bound_name", $.identifier)),
 
