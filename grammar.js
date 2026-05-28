@@ -29,10 +29,10 @@ const TAGS = [
   {name: "comment", args: $ => optional($.identifier)},
   {name: "endcomment"},
   {name: "include", args: $ => seq(
-    choice($.string_literal, $.identifier),
+    choice($.string, $.identifier),
     optional(seq("with", repeat($.binding), optional("only"))),
   )},
-  {name: "extends", args: $ => choice($.string_literal, $.identifier)},
+  {name: "extends", args: $ => choice($.string, $.identifier)},
   {name: "cycle", args: $ =>
       seq(
         repeat1($.expression),
@@ -133,7 +133,7 @@ module.exports = grammar({
     operator: $ => choice("==", "!=", "<", ">", "<=", ">="),
     number: $ => /[0-9]+/,
     boolean: $ => token(seq(choice("True", "False"), /\s/)),
-    string_literal: $ => choice(
+    string: $ => choice(
       seq("'", repeat(/[^']|\\'/), "'"),
       seq('"', repeat(/[^"]|\\"/), '"')
     ),
@@ -145,7 +145,7 @@ module.exports = grammar({
       field("filter_name", $.identifier),
       optional(seq(":", $.filter_argument))
     ),
-    filter_argument: $ => choice($.identifier, $.attribute_path, $.string_literal),
+    filter_argument: $ => choice($.identifier, $.attribute_path, $.string),
 
     expression: $ => seq(
       choice(
@@ -154,7 +154,7 @@ module.exports = grammar({
         $.identifier,
         $.number,
         $.boolean,
-        $.string_literal,
+        $.string,
       ),
       repeat(seq("|", $.filter))
     ),

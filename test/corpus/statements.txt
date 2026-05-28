@@ -23,9 +23,9 @@ cycle
 (template
   (content)
   (tag
-    (expression (string_literal))
+    (expression (string))
     (expression (identifier))
-    (expression (string_literal))
+    (expression (string))
     (identifier))
   (content))
 
@@ -56,7 +56,7 @@ extends
 
 (template
   (content)
-  (tag (string_literal))
+  (tag (string))
   (content))
 
 ==================
@@ -78,7 +78,7 @@ firstof
       (identifier))
     (expression
       (identifier))
-    (expression (string_literal)))
+    (expression (string)))
   (content))
 
 ==================
@@ -95,8 +95,8 @@ include
   (content)
   (tag
     
-    (string_literal)
-    (binding (identifier) (expression (string_literal))))
+    (string)
+    (binding (identifier) (expression (string))))
   (content))
 
 ==================
@@ -143,7 +143,7 @@ now
   (content)
   (tag
     
-    (expression (string_literal)))
+    (expression (string)))
   (content))
 
 ==================
@@ -212,7 +212,7 @@ url
   (content)
   (tag
     
-    (expression (string_literal))
+    (expression (string))
     (expression (identifier))
     (expression (identifier))
     (tag_binding (identifier)))
