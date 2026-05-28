@@ -1,18 +1,95 @@
+function tag($, name, args = undefined) {
+  return seq(
+      "{%", field("tag_name", name),
+      // `{% ${name}`,
+      ...(args ? [args($)] : []),
+      "%}",
+  )
+}
+const BLOCKS = [
+  {name: "autoescape", args: $ => choice("on", "off")},
+  {name: "block", args: $ => field("block_name", $.identifier)},
+  {name: "blocktrans", args: $ => repeat($.expression)},
+  {name: "blocktranslate", args: $ => repeat($.expression)},
+  {name: "ifchanged", args: $ => repeat($.expression)},
+  {name: "spaceless", args: $ => repeat($.expression)},
+  {name: "with", args: $ => repeat($.binding)},
+  {name: "filter", args: $ => seq($.filter, repeat(seq("|", $.filter)))},
+]
+const TAGS = [
+  {name: "if", args: $ => repeat($.expression)},
+  {name: "elif", args: $ => repeat($.expression)},
+  {name: "else"},
+  {name: "endif"},
+  {name: "for", args: $ => seq(field("loop_variable", $.identifier), "in", $.expression)},
+  {name: "empty"},
+  {name: "endfor"},
+  {name: "verbatim", args: $ => optional($.identifier)},
+  {name: "endverbatim", args: $ => optional($.identifier)},
+  {name: "comment", args: $ => optional($.identifier)},
+  {name: "endcomment"},
+  {name: "include", args: $ => seq(
+    choice($.string_literal, $.identifier),
+    optional(seq("with", repeat($.binding), optional("only"))),
+  )},
+  {name: "extends", args: $ => choice($.string_literal, $.identifier)},
+  {name: "cycle", args: $ =>
+      seq(
+        repeat1($.expression),
+        optional(seq("as", $.identifier)),
+        optional("silent"),
+      ),
+  },
+  {name: "load", args: $ =>
+      choice(
+        repeat1(choice($.identifier, $.attribute_path)),
+        seq(repeat1($.identifier), "from", $.attribute_path),
+      ),
+  },
+  {name: "regroup", args: $ => seq(
+    field("group", $.expression),
+    "by",
+    field("grouping_criterion", $.identifier),
+    $.tag_binding
+  )},
+  ...BLOCKS,
+  ...(BLOCKS.map(({name}) => ({name: `end${name}`}))),
+]
+
+
+const TAG_RULES = Object.fromEntries([
+  ...(TAGS.map(({name, args}) => [`__${name}_tag`, $ => tag($, name, args)])),
+  ...(TAGS.map(({name}) =>  [`_${name}_tag`, $ => alias($[`__${name}_tag`], $.tag)])),
+])
+
+const BLOCK_RULES = Object.fromEntries([
+  ...BLOCKS.map(
+    ({name}) => [
+      `__${name}_block`,
+      $ => seq(
+        field("start_tag", $[`_${name}_tag`]),
+        alias(repeat($._node), $.block_body),
+        field("end_tag", $[`_end${name}_tag`]),
+      ),
+    ]
+  ),
+  ...(BLOCKS.map(({name}) =>  [`_${name}_block`, $ => alias($[`__${name}_block`], $.block)])),
+])
 module.exports = grammar({
   name: "htmldjango",
 
-  word: $ => $.identifier,
+  // word: $ => $.identifier,
 
-  reserved: {
-    "default": $ => ["if", "elif", "else"],
-  },
+  // reserved: {
+  //   "default": $ => ["if", "elif", "else"],
+  // },
 
 
   conflicts: $ => [
     // elif tag can't be told apart from other tags in an if block without looking ahead
-    // [$.if_block],
+    [$._elif_block],
     // `{% load a from b %}` can't be told apart from `{% load a b c %}` without looking ahead
-    [$._load_tag],
+    [$.__load_tag],
   ],
 
   rules: {
@@ -65,8 +142,7 @@ module.exports = grammar({
     attribute_path: $ => seq($.identifier, repeat1(seq(".", $.identifier))),
 
     filter: $ => seq(
-      "|",
-      alias($.identifier, $.filter_name),
+      field("filter_name", $.identifier),
       optional(seq(":", $.filter_argument))
     ),
     filter_argument: $ => choice($.identifier, $.attribute_path, $.string_literal),
@@ -80,15 +156,16 @@ module.exports = grammar({
         $.boolean,
         $.string_literal,
       ),
-      repeat($.filter)
+      repeat(seq("|", $.filter))
     ),
 
     // Statements
     // unpaired type {% tag %}
+    // 
     // paired type   {% tag %}..{% endtag %}
     _statement: $ => choice(
       $._known_block,
-      alias($._known_tag, $.tag),
+      $._known_tag,
       alias($._unrecognised_tag, $.tag),
     ),
 
@@ -101,135 +178,69 @@ module.exports = grammar({
     ),
 
     _known_block: $ => choice(
-      $.if_block,
-      $._for_block,
-      $._filter_block,
-      $._verbatim_block,
-      $._filter_block,
-      $.block,
+      alias($.if_block, $.block),
+      alias($._for_block, $.block),
+      alias($._verbatim_block, $.block),
+      ...(BLOCKS.map(({name}) => $[`_${name}_block`])),
     ),
 
-    block: $ => {
-      const tag_names = [
-        "autoescape",
-        "block",
-        "blocktrans",
-        "blocktranslate",
-        "ifchanged",
-        "spaceless",
-        "with"
-      ];
-
-      return choice(...tag_names.map((tag_name) => seq(
-        "{%", field("tag_name", tag_name), repeat($.expression), "%}",
+    _elif_block: $ => seq(
+        field("elif_tag", $._elif_tag),
         alias(repeat($._node), $.block_body),
-        "{%", field("tag_name", "end" + tag_name), repeat($.expression), "%}")));
-    },
-
-    _if_tag: $ => seq("{%", field("tag_name", "if"), repeat($.expression), "%}"),
-    _elif_tag: $ => seq("{%", field("tag_name", "elif"), repeat($.expression), "%}"),
-    _else_tag: $ => seq("{%", field("tag_name", "else"), "%}"),
-    _endif_tag: $ => seq(token(seq("{%", field("tag_name", "endif"))), "%}"),
+    ),
 
     if_block: $ => seq(
-      field("if_tag", alias($._if_tag, $.tag)),
+      field("if_tag", $._if_tag),
       alias(repeat($._node), $.block_body),
-      repeat(seq(
-        alias($._elif_tag, $.tag),
-        alias(repeat(choice($.variable, $._known_tag, $._known_block, $.content)), $.block_body),
-      )),
+      repeat($._elif_block),
       optional(seq(
-        field("else_tag", alias($._else_tag, $.tag)),
+        field("else_tag", $._else_tag),
         alias(repeat($._node), $.block_body),
       )),
-      field("endif_tag", alias($._endif_tag, $.tag)),
+      field("endif_tag", $._endif_tag),
     ),
 
-    _for_tag: $ => seq("{%", field("tag_name", "for"), repeat($.expression), "%}"),
-    _empty_tag: $ => seq("{%", field("tag_name", "empty"), repeat($.expression), "%}"),
-    _endfor_tag: $ => seq("{%", field("tag_name", "endfor"), "%}"),
     _for_block: $ => seq(
-      alias($._for_tag, $.tag),
-      alias(repeat($._node), $.for_body),
+      $._for_tag,
+      alias(repeat($._node), $.block_body),
       optional(seq(
-        alias($._empty_tag, $.tag),
-        alias(repeat($._node), $.for_empty_body),
+        $._empty_tag,
+        field("empty_body", alias(repeat($._node), $.block_body)),
       )),
-      alias($._endfor_tag, $.tag),
+      $._endfor_tag,
     ),
 
     _filter_block: $ => seq(
-      "{%", field("tag_name", "filter"), $.filter, repeat(seq("|", $.filter)), "%}",
+      $._filter_tag,
       repeat($._node),
-      "{%", field("tag_name", "endfilter"), "%}"
+      $._endfilter_tag,
     ),
 
-    _verbatim_tag: $ => seq("{%", field("tag_name", "verbatim"), "%}"),
-    _endverbatim_tag: $ => seq("{%", field("tag_name", "endverbatim"), "%}"),
     _verbatim_block: $ => seq(
       $._verbatim_tag,
       alias(repeat(/[^{]+|\{[^%]/), $.verbatim_content),
       $._endverbatim_tag,
     ),
 
-    _include_tag: $ => seq(
-      "{%",
-      field("tag_name", "include"),
-      choice($.string_literal, $.identifier),
-      optional(seq("with", repeat($.binding), optional("only"))),
-      "%}"
-    ),
-    _extends_tag: $ => seq("{%", field("tag_name", "extends"), choice($.string_literal, $.identifier), "%}"),
-
-
-    _cycle_tag: $ => seq(
-      "{%",
-      field("tag_name", "cycle"),
-      repeat1($.expression),
-      optional(seq("as", $.identifier)),
-      optional("silent"),
-      "%}"
-    ),
-
-    _load_tag: $ => seq(
-      "{%",
-      field("tag_name", "load"),
-      choice(
-        repeat1(choice($.identifier, $.attribute_path)),
-        seq(repeat1($.identifier), "from", $.attribute_path),
-      ),
-      "%}"
-    ),
-
     binding: $ => choice(
-      seq($.expression, "as", $.identifier),
-      seq($.identifier, "=", $.expression),
+      seq(field("value", $.expression), "as", field("name", $.identifier)),
+      seq(field("name", $.identifier), "=", field("value", $.expression)),
     ),
 
     _with_bindings: $ => seq("with", repeat1($.binding)),
 
-    _regroup_tag: $ => seq(
-      "{%",
-      field("tag_name", "regroup"),
-      $.expression,
-      "by",
-      $.identifier,
-      "as",
-      $.identifier,
-      "%}",
-    ),
-
-    tag_binding: $ => seq("as", $.identifier),
+    tag_binding: $ => seq("as", field("bound_name", $.identifier)),
 
     _unrecognised_tag: $ => seq(
       "{%",
-      field("tag_name", alias($.identifier, "")),
+      field("tag_name", /([^e\s]|e[^l]|el[^i]|eli[^f])\w*/),
+      // /([^e]|e[^l]|el[^i]|eli[^f]|elif\w)\w*/,
       repeat(choice(
         $.expression,
         /\{[^%]+/
       )),
       optional($.tag_binding),
-      "%}"
+      "%}",
     ),
 
     // Comments
@@ -241,13 +252,16 @@ module.exports = grammar({
     ),
     unpaired_comment: $ => seq("{#", repeat(/.|\s/), repeat(seq(alias($.unpaired_comment, ""), repeat(/.|\s/))), "#}"),
     paired_comment: $ => seq(
-      "{%", "comment", optional($.identifier), "%}",
+      field("start_tag", $._comment_tag),
       repeat(/.|\s/),
       repeat(seq($.paired_comment, repeat(/.|\s/))),
-      "{%", "endcomment", "%}",
+      field("end_tag", $._endcomment_tag),
     ),
 
     // All other content
-    content: $ => /([^\{]|\{[^{%#])+/
+    content: $ => /([^\{]|\{[^{%#])+/,
+
+    ...TAG_RULES,
+    ...BLOCK_RULES,
   }
 });

@@ -159,10 +159,9 @@ regroup
 (template
   (content)
   (tag
-    
     (expression (identifier))
     (identifier)
-    (identifier))
+    (tag_binding (identifier)))
   (content))
 
 ==================
@@ -288,7 +287,7 @@ if
 
 (template
   (content)
-  (if_block
+  (block
     (tag (expression (identifier)))
     (block_body (content))
     (tag (expression (identifier)))
@@ -311,11 +310,11 @@ statement-in-elif
 ---
 
 (template
-  (if_block
+  (block
     (tag (expression (identifier)))
     (tag (expression (identifier)))
     (block_body (tag))
-    (tag (expression (identifier))))
+    (tag))
   (content))
 
 ==================
@@ -334,20 +333,13 @@ for
 
 (template
   (content)
-  (paired_statement
-    
-    (variable
-      (variable_name))
-    (keyword_operator)
-    (variable
-      (variable_name))
-    (variable
-      (variable_name))
-    (branch_statement
-      )
-    (content)
-    
-    (end_paired_statement))
+  (block
+    (tag (identifier) (expression (identifier)))
+    (block_body (variable (expression (identifier))))
+    (tag)
+    (block_body (content))
+    (tag)
+  )
   (content))
 
 ==================
@@ -364,13 +356,11 @@ block
 
 (template
   (content)
-  (paired_statement
-    
-    (variable
-      (variable_name))
-    (content)
-    
-    (end_paired_statement))
+  (block
+    (tag (identifier))
+    (block_body (content))
+    (tag)
+  )
   (content))
 
 ==================
@@ -387,12 +377,10 @@ autoescape
 
 (template
   (content)
-  (paired_statement
-    
-    (keyword)
-    (content)
-    
-    (end_paired_statement))
+  (block
+    (tag)
+    (block_body (content))
+    (tag))
   (content))
 
 ==================
@@ -409,15 +397,11 @@ filter
 
 (template
   (content)
-  (paired_statement
-    
-    (filter
-      (filter_name))
-    (filter
-      (filter_name))
-    (content)
-    
-    (end_paired_statement))
+  (block
+    (tag (filter (identifier)) (filter (identifier)))
+    (block_body (content))
+    (tag)
+  )
   (content))
 
 ==================
@@ -436,22 +420,16 @@ ifchanged
 
 (template
   (content)
-  (paired_statement
-    
-    (variable
-      (variable_name))
-    (keyword_operator)
-    (variable
-      (variable_name))
-    (paired_statement
-      
-      (variable
-        (variable_name))
-      (content)
-      
-      (end_paired_statement))
-    
-    (end_paired_statement))
+  (block
+    (tag (identifier) (expression (identifier)))
+    (block_body
+      (block
+        (tag (expression (identifier)))
+        (block_body (content))
+        (tag)
+      ))
+    (tag)
+  )
   (content))
 
 ==================
@@ -468,11 +446,10 @@ blocktranslate
 
 (template
   (content)
-  (paired_statement
-    
-    (content)
-    
-    (end_paired_statement))
+  (block
+    (tag)
+    (block_body (content))
+    (tag))
   (content))
 
 ==================
@@ -489,11 +466,10 @@ spaceless
 
 (template
   (content)
-  (paired_statement
-    
-    (content)
-    
-    (end_paired_statement))
+  (block
+    (tag)
+    (block_body (content))
+    (tag))
   (content))
 
 ==================
@@ -502,23 +478,24 @@ verbatim
 
 <html>
   {% verbatim block %}
-    content
+    content {{nonsense}}
   {% endverbatim block %}
+  {% verbatim %}
+    {{nonsense
+  {% endverbatim %}
 </html>
 
 ---
-
 (template
   (content)
-  (paired_statement
-    
-    (variable
-      (variable_name))
-    (content)
-    
-    (variable
-      (variable_name))
-    (end_paired_statement))
+  (block
+    (tag (identifier))
+    (verbatim_content)
+    (tag (identifier)))
+  (block
+    (tag)
+    (verbatim_content)
+    (tag))
   (content))
 
 ==================
@@ -535,17 +512,14 @@ with
 
 (template
   (content)
-  (paired_statement
-    
-    (variable
-      (variable_name))
-    (number)
-    (variable
-      (variable_name))
-    (number)
-    (content)
-    
-    (end_paired_statement))
+  (block
+    (tag
+      (binding (identifier) (expression (number)))
+      (binding (identifier) (expression (number)))
+    )
+    (block_body
+      (content))
+    (tag))
   (content))
 
 ==================
@@ -562,15 +536,9 @@ keywords
 (template
   (content)
   (tag
-    
-    (keyword)
-    (variable
-      (variable_name)))
+    (tag_binding (identifier)))
   (tag
-    
-    (keyword)
-    (variable
-      (variable_name)))
+    (tag_binding (identifier)))
   (content))
 
 ==================

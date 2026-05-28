@@ -31,7 +31,7 @@ unlabelled_paired_comment
   {% endcomment %}
 ---
 (template
-  (paired_comment))
+  (paired_comment (tag) (tag)))
 
 ==================
 labelled_paired_comment
@@ -41,7 +41,7 @@ labelled_paired_comment
   {% endcomment %}
 ---
 (template
-  (paired_comment (identifier)))
+  (paired_comment (tag (identifier)) (tag)))
 
 ==================
 nested_paired_comments
@@ -56,6 +56,11 @@ nested_paired_comments
 
 (template
   (paired_comment
-    (identifier)
+    (tag (identifier))
     (paired_comment
-      (paired_comment (identifier)))))
+      (tag)
+      (paired_comment
+        (tag (identifier))
+        (tag))
+      (tag))
+    (tag)))

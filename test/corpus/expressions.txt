@@ -21,7 +21,7 @@ variable_basic_filter
   (variable
     (expression
       (identifier)
-      (filter (filter_name)))))
+      (filter (identifier)))))
 
 ==================
 variable_filter_with_arg
@@ -33,7 +33,7 @@ variable_filter_with_arg
     (expression
     (identifier)
     (filter
-      (filter_name)
+      (identifier)
       (filter_argument (identifier))))))
 
 ==================
@@ -46,7 +46,7 @@ variable_filter_with_arg_path
     (expression
       (identifier)
       (filter
-        (filter_name)
+        (identifier)
         (filter_argument (attribute_path (identifier) (identifier) (identifier)))))))
 
 
@@ -61,13 +61,13 @@ variable_filter_with_quoted_args
     (expression
       (identifier)
       (filter
-        (filter_name)
+        (identifier)
         (filter_argument (string_literal)))))
   (variable
     (expression
       (identifier)
       (filter
-        (filter_name)
+        (identifier)
         (filter_argument (string_literal))))))
 
 ==================
@@ -79,10 +79,10 @@ variable_filter_with_everything
   (variable
     (expression
       (attribute_path (identifier) (identifier) (identifier))
-      (filter (filter_name))
-      (filter (filter_name) (filter_argument (identifier)))
-      (filter (filter_name) (filter_argument (attribute_path (identifier) (identifier))))
-      (filter (filter_name) (filter_argument (string_literal))))))
+      (filter (identifier))
+      (filter (identifier) (filter_argument (identifier)))
+      (filter (identifier) (filter_argument (attribute_path (identifier) (identifier))))
+      (filter (identifier) (filter_argument (string_literal))))))
 
 ==================
 string
@@ -105,8 +105,8 @@ string_filter
 {{ 'string'|filter }}
 ---
 (template
-  (variable (expression (string_literal) (filter (filter_name))))
-  (variable (expression (string_literal) (filter (filter_name)))))
+  (variable (expression (string_literal) (filter (identifier))))
+  (variable (expression (string_literal) (filter (identifier)))))
 
 
 ==================
@@ -118,7 +118,7 @@ string_filter_with_everything
   (variable
     (expression
       (string_literal)
-        (filter (filter_name))
-        (filter (filter_name) (filter_argument (identifier)))
-        (filter (filter_name) (filter_argument (attribute_path (identifier) (identifier))))
-        (filter (filter_name) (filter_argument (string_literal))))))
+        (filter (identifier))
+        (filter (identifier) (filter_argument (identifier)))
+        (filter (identifier) (filter_argument (attribute_path (identifier) (identifier))))
+        (filter (identifier) (filter_argument (string_literal))))))
