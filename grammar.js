@@ -3,7 +3,12 @@ module.exports = grammar({
 
   word: $ => $.identifier,
 
-  conflicts: $ => [[$._if_block]],
+  conflicts: $ => [
+    // elif tag can't be told apart from other tags in an if block without looking ahead
+    [$._if_block],
+    // `{% load a from b %}` can't be told apart from `{% load a b c %}` without looking ahead
+    [$._load_tag],
+  ],
 
   rules: {
     template: $ => repeat(
@@ -27,8 +32,6 @@ module.exports = grammar({
         "off",
         "silent",
         "from",
-        "random",
-        "by"
       ),
       /\s/
     )),
@@ -88,6 +91,8 @@ module.exports = grammar({
       $._include_tag,
       $._extends_tag,
       $._general_expression_tag,
+      $._load_tag,
+      $._regroup_tag,
     ),
 
     _known_block: $ => choice(
@@ -188,6 +193,16 @@ module.exports = grammar({
       "%}"
     ),
 
+    _load_tag: $ => seq(
+      "{%",
+      alias("load", $.tag_name),
+      choice(
+        repeat1(choice($.identifier, $.attribute_path)),
+        seq(repeat1($.identifier), "from", $.attribute_path),
+      ),
+      "%}"
+    ),
+
     binding: $ => choice(
       seq($.expression, "as", $.identifier),
       seq($.identifier, "=", $.expression),
@@ -195,7 +210,29 @@ module.exports = grammar({
 
     _with_bindings: $ => seq("with", repeat1($.binding)),
 
-    _unrecognised_tag: $ => seq("{%", alias($.identifier, $.tag_name), repeat(/[^%]+|%[^}]/), "%}"),
+    _regroup_tag: $ => seq(
+      "{%",
+      alias("regroup", $.tag_name),
+      $.expression,
+      "by",
+      $.identifier,
+      "as",
+      $.identifier,
+      "%}",
+    ),
+
+    tag_binding: $ => seq("as", $.identifier),
+
+    _unrecognised_tag: $ => seq(
+      "{%",
+      alias($.identifier, $.tag_name),
+      repeat(choice(
+        $.expression,
+        /\{[^%]+/
+      )),
+      optional($.tag_binding),
+      "%}"
+    ),
 
     // Comments
     // unpaired type {# comment #}

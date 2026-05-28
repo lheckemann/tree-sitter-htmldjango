@@ -71,14 +71,6 @@
               {
                 "type": "STRING",
                 "value": "from"
-              },
-              {
-                "type": "STRING",
-                "value": "random"
-              },
-              {
-                "type": "STRING",
-                "value": "by"
               }
             ]
           },
@@ -408,6 +400,14 @@
         {
           "type": "SYMBOL",
           "name": "_general_expression_tag"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "_load_tag"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "_regroup_tag"
         }
       ]
     },
@@ -1521,6 +1521,69 @@
         }
       ]
     },
+    "_load_tag": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "STRING",
+          "value": "{%"
+        },
+        {
+          "type": "ALIAS",
+          "content": {
+            "type": "STRING",
+            "value": "load"
+          },
+          "named": true,
+          "value": "tag_name"
+        },
+        {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "REPEAT1",
+              "content": {
+                "type": "CHOICE",
+                "members": [
+                  {
+                    "type": "SYMBOL",
+                    "name": "identifier"
+                  },
+                  {
+                    "type": "SYMBOL",
+                    "name": "attribute_path"
+                  }
+                ]
+              }
+            },
+            {
+              "type": "SEQ",
+              "members": [
+                {
+                  "type": "REPEAT1",
+                  "content": {
+                    "type": "SYMBOL",
+                    "name": "identifier"
+                  }
+                },
+                {
+                  "type": "STRING",
+                  "value": "from"
+                },
+                {
+                  "type": "SYMBOL",
+                  "name": "attribute_path"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "STRING",
+          "value": "%}"
+        }
+      ]
+    },
     "binding": {
       "type": "CHOICE",
       "members": [
@@ -1576,6 +1639,61 @@
         }
       ]
     },
+    "_regroup_tag": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "STRING",
+          "value": "{%"
+        },
+        {
+          "type": "ALIAS",
+          "content": {
+            "type": "STRING",
+            "value": "regroup"
+          },
+          "named": true,
+          "value": "tag_name"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "expression"
+        },
+        {
+          "type": "STRING",
+          "value": "by"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "identifier"
+        },
+        {
+          "type": "STRING",
+          "value": "as"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "identifier"
+        },
+        {
+          "type": "STRING",
+          "value": "%}"
+        }
+      ]
+    },
+    "tag_binding": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "STRING",
+          "value": "as"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "identifier"
+        }
+      ]
+    },
     "_unrecognised_tag": {
       "type": "SEQ",
       "members": [
@@ -1595,9 +1713,30 @@
         {
           "type": "REPEAT",
           "content": {
-            "type": "PATTERN",
-            "value": "[^%]+|%[^}]"
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "SYMBOL",
+                "name": "expression"
+              },
+              {
+                "type": "PATTERN",
+                "value": "\\{[^%]+"
+              }
+            ]
           }
+        },
+        {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "SYMBOL",
+              "name": "tag_binding"
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
         },
         {
           "type": "STRING",
@@ -1743,6 +1882,9 @@
   "conflicts": [
     [
       "_if_block"
+    ],
+    [
+      "_load_tag"
     ]
   ],
   "precedences": [],
