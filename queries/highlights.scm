@@ -16,7 +16,7 @@
 (filter_argument) @parameter
 ; (keyword) @keyword
 ; (operator) @operator
-; (keyword_operator) @keyword.operator
+(keyword_operator) @keyword.operator
 ; (number) @number
 ; (boolean) @boolean
 (string) @string

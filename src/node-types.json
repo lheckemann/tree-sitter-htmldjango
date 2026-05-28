@@ -191,6 +191,10 @@
           "named": true
         },
         {
+          "type": "expression",
+          "named": true
+        },
+        {
           "type": "filter",
           "named": true
         },
@@ -200,6 +204,10 @@
         },
         {
           "type": "number",
+          "named": true
+        },
+        {
+          "type": "operator",
           "named": true
         },
         {
@@ -261,6 +269,11 @@
         }
       ]
     }
+  },
+  {
+    "type": "operator",
+    "named": true,
+    "fields": {}
   },
   {
     "type": "paired_comment",
@@ -338,9 +351,13 @@
         ]
       },
       "loop_variable": {
-        "multiple": false,
+        "multiple": true,
         "required": false,
         "types": [
+          {
+            "type": ",",
+            "named": false
+          },
           {
             "type": "identifier",
             "named": true
@@ -595,6 +612,10 @@
     "fields": {}
   },
   {
+    "type": "!=",
+    "named": false
+  },
+  {
     "type": "\"",
     "named": false
   },
@@ -611,6 +632,18 @@
     "named": false
   },
   {
+    "type": "(",
+    "named": false
+  },
+  {
+    "type": ")",
+    "named": false
+  },
+  {
+    "type": ",",
+    "named": false
+  },
+  {
     "type": ".",
     "named": false
   },
@@ -619,7 +652,31 @@
     "named": false
   },
   {
+    "type": "<",
+    "named": false
+  },
+  {
+    "type": "<=",
+    "named": false
+  },
+  {
     "type": "=",
+    "named": false
+  },
+  {
+    "type": "==",
+    "named": false
+  },
+  {
+    "type": ">",
+    "named": false
+  },
+  {
+    "type": ">=",
+    "named": false
+  },
+  {
+    "type": "_",
     "named": false
   },
   {
@@ -657,6 +714,14 @@
   {
     "type": "content",
     "named": true
+  },
+  {
+    "type": "context",
+    "named": false
+  },
+  {
+    "type": "count",
+    "named": false
   },
   {
     "type": "cycle",
@@ -793,6 +858,10 @@
   {
     "type": "special_identifier",
     "named": true
+  },
+  {
+    "type": "trimmed",
+    "named": false
   },
   {
     "type": "verbatim",

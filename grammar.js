@@ -1,16 +1,19 @@
 function tag($, name, args = undefined) {
   return seq(
       "{%", field("tag_name", name),
-      // `{% ${name}`,
       ...(args ? [args($)] : []),
       "%}",
   )
 }
 const BLOCKS = [
   {name: "autoescape", args: $ => choice("on", "off")},
-  {name: "block", args: $ => field("block_name", $.identifier)},
-  {name: "blocktrans", args: $ => repeat($.expression)},
-  {name: "blocktranslate", args: $ => repeat($.expression)},
+  {
+    name: "block",
+    args: $ => field("block_name", $.identifier),
+    end_args: $ => optional(field("block_name", $.identifier))
+  },
+  {name: "blocktrans", args: $ => repeat($._blocktranslate_arg)},
+  {name: "blocktranslate", args: $ => repeat($._blocktranslate_arg)},
   {name: "ifchanged", args: $ => repeat($.expression)},
   {name: "spaceless", args: $ => repeat($.expression)},
   {name: "with", args: $ => repeat($.binding)},
@@ -21,7 +24,14 @@ const TAGS = [
   {name: "elif", args: $ => repeat($.expression)},
   {name: "else"},
   {name: "endif"},
-  {name: "for", args: $ => seq(field("loop_variable", $.identifier), "in", $.expression)},
+  {
+    name: "for",
+    args: $ => seq(
+      field("loop_variable", seq($.identifier, optional(repeat(seq(",", $.identifier))))),
+      "in",
+      $.expression
+    )
+  },
   {name: "empty"},
   {name: "endfor"},
   {name: "verbatim", args: $ => optional($.identifier)},
@@ -29,8 +39,8 @@ const TAGS = [
   {name: "comment", args: $ => optional($.identifier)},
   {name: "endcomment"},
   {name: "include", args: $ => seq(
-    choice($.string, $.identifier),
-    optional(seq("with", repeat($.binding), optional("only"))),
+    choice($.string, $.identifier, $.attribute_path),
+    optional(seq("with", repeat1($.binding), optional("only"))),
   )},
   {name: "extends", args: $ => choice($.string, $.identifier)},
   {name: "cycle", args: $ =>
@@ -53,7 +63,7 @@ const TAGS = [
     $.tag_binding
   )},
   ...BLOCKS,
-  ...(BLOCKS.map(({name}) => ({name: `end${name}`}))),
+  ...(BLOCKS.map(({name, end_args}) => ({name: `end${name}`, args: end_args}))),
 ]
 
 
@@ -78,12 +88,7 @@ const BLOCK_RULES = Object.fromEntries([
 module.exports = grammar({
   name: "htmldjango",
 
-  // word: $ => $.identifier,
-
-  // reserved: {
-  //   "default": $ => ["if", "elif", "else"],
-  // },
-
+  word: $ => $.identifier,
 
   conflicts: $ => [
     // elif tag can't be told apart from other tags in an if block without looking ahead
@@ -138,7 +143,7 @@ module.exports = grammar({
       seq('"', repeat(/[^"]|\\"/), '"')
     ),
 
-    identifier: $ => /\w+/,
+    identifier: $ => /[\w-]+/,
     attribute_path: $ => seq($.identifier, repeat1(seq(".", $.identifier))),
 
     filter: $ => seq(
@@ -147,16 +152,19 @@ module.exports = grammar({
     ),
     filter_argument: $ => choice($.identifier, $.attribute_path, $.string),
 
-    expression: $ => seq(
-      choice(
-        $.special_identifier,
-        $.attribute_path,
-        $.identifier,
-        $.number,
-        $.boolean,
-        $.string,
-      ),
-      repeat(seq("|", $.filter))
+    _atom: $ => choice(
+      $.special_identifier,
+      $.attribute_path,
+      $.identifier,
+      $.number,
+      $.boolean,
+      $.string,
+    ),
+    _filtered_atom: $ => seq($._atom, repeat(seq("|", $.filter))),
+    expression: $ => choice(
+      $._filtered_atom,
+      seq($._filtered_atom, $.operator, $.expression),
+      seq("_", "(", $.string, ")"),
     ),
 
     // Statements
@@ -222,9 +230,16 @@ module.exports = grammar({
       $._endverbatim_tag,
     ),
 
+    _blocktranslate_arg: $ => choice(
+      seq("with", repeat1($.binding)),
+      seq("count", $.binding),
+      seq("context", $.string),
+      "trimmed",
+    ),
+    _equals_binding: $ => seq(field("name", $.identifier), "=", field("value", $.expression)),
     binding: $ => choice(
       seq(field("value", $.expression), "as", field("name", $.identifier)),
-      seq(field("name", $.identifier), "=", field("value", $.expression)),
+      $._equals_binding
     ),
 
     _with_bindings: $ => seq("with", repeat1($.binding)),
@@ -233,10 +248,12 @@ module.exports = grammar({
 
     _unrecognised_tag: $ => seq(
       "{%",
+      // nasty hack to avoid matching elif; not sure if there's a better way to
+      // ensure that ifs are parsed correctly
       field("tag_name", /([^e\s]|e[^l]|el[^i]|eli[^f])\w*/),
-      // /([^e]|e[^l]|el[^i]|eli[^f]|elif\w)\w*/,
       repeat(choice(
         $.expression,
+        alias($._equals_binding, $.binding),
         /\{[^%]+/
       )),
       optional($.tag_binding),
