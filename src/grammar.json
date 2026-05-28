@@ -879,6 +879,28 @@
           ]
         },
         {
+          "type": "ALIAS",
+          "content": {
+            "type": "SEQ",
+            "members": [
+              {
+                "type": "STRING",
+                "value": "asvar"
+              },
+              {
+                "type": "FIELD",
+                "name": "bound_name",
+                "content": {
+                  "type": "SYMBOL",
+                  "name": "identifier"
+                }
+              }
+            ]
+          },
+          "named": true,
+          "value": "tag_binding"
+        },
+        {
           "type": "FIELD",
           "name": "trimmed",
           "content": {

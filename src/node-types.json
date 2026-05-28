@@ -348,6 +348,16 @@
           }
         ]
       },
+      "bound_name": {
+        "multiple": true,
+        "required": false,
+        "types": [
+          {
+            "type": "tag_binding",
+            "named": true
+          }
+        ]
+      },
       "context": {
         "multiple": true,
         "required": false,
@@ -610,7 +620,7 @@
     "fields": {
       "bound_name": {
         "multiple": false,
-        "required": true,
+        "required": false,
         "types": [
           {
             "type": "identifier",

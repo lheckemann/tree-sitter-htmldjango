@@ -259,6 +259,7 @@ module.exports = grammar({
       $._with_bindings,
       seq("count", field("count", choice(field("binding", $.binding), $.expression))),
       seq("context", field("context", $.string)),
+      alias(seq("asvar", field("bound_name", $.identifier)), $.tag_binding),
       field("trimmed", "trimmed"),
     ),
     _translate_arg: $ => choice(
