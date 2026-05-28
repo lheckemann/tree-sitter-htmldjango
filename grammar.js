@@ -82,6 +82,7 @@ module.exports = grammar({
       $.block,
       $.if_block,
       $.for_block,
+      $.verbatim_block,
       $.filter_statement,
       $.unpaired_statement
     ),
@@ -94,7 +95,6 @@ module.exports = grammar({
         "blocktranslate",
         "ifchanged",
         "spaceless",
-        "verbatim",
         "with"
       ];
 
@@ -142,6 +142,14 @@ module.exports = grammar({
       "{%", alias("endfilter", $.tag_name), alias("%}", $.end_paired_statement)
     ),
     unpaired_statement: $ => seq("{%", alias($.identifier, $.tag_name), repeat($._attribute), "%}"),
+
+    verbatim_tag: $ => seq("{%", alias("verbatim", $.tag_name), "%}"),
+    endverbatim_tag: $ => seq("{%", alias("endverbatim", $.tag_name), "%}"),
+    verbatim_block: $ => seq(
+      $.verbatim_tag,
+      alias(repeat(/[^{]+|\{[^%]/), $.verbatim_content),
+      $.endverbatim_tag,
+    ),
 
     _attribute: $ => seq(
       choice(
