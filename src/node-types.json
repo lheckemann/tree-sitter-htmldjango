@@ -529,6 +529,10 @@
             "named": false
           },
           {
+            "type": "plural",
+            "named": false
+          },
+          {
             "type": "regroup",
             "named": false
           },
@@ -926,6 +930,10 @@
   },
   {
     "type": "only",
+    "named": false
+  },
+  {
+    "type": "plural",
     "named": false
   },
   {

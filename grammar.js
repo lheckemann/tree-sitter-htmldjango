@@ -12,8 +12,6 @@ const BLOCKS = [
     args: $ => field("block_name", $.identifier),
     end_args: $ => optional(field("block_name", $.identifier))
   },
-  {name: "blocktrans", args: $ => repeat($._blocktranslate_arg)},
-  {name: "blocktranslate", args: $ => repeat($._blocktranslate_arg)},
   {name: "ifchanged", args: $ => repeat($.expression)},
   {name: "spaceless", args: $ => repeat($.expression)},
   {name: "with", args: $ => repeat($.binding)},
@@ -38,6 +36,11 @@ const TAGS = [
   {name: "endverbatim", args: $ => optional($.identifier)},
   {name: "comment", args: $ => optional($.identifier)},
   {name: "endcomment"},
+  {name: "blocktrans", args: $ => repeat($._blocktranslate_arg)},
+  {name: "blocktranslate", args: $ => repeat($._blocktranslate_arg)},
+  {name: "endblocktrans"},
+  {name: "endblocktranslate"},
+  {name: "plural"},
   {name: "include", args: $ => seq(
     choice($.string, $.identifier, $.attribute_path),
     optional(seq("with", repeat1($.binding), optional("only"))),
@@ -200,6 +203,7 @@ module.exports = grammar({
       alias($.if_block, $.block),
       alias($._for_block, $.block),
       alias($._verbatim_block, $.block),
+      alias($._blocktranslate_block, $.block),
       ...(BLOCKS.map(({name}) => $[`_${name}_block`])),
     ),
 
@@ -239,6 +243,16 @@ module.exports = grammar({
       $._verbatim_tag,
       alias(repeat(/[^{]+|\{[^%]/), $.verbatim_content),
       $._endverbatim_tag,
+    ),
+
+    _blocktranslate_block: $ => seq(
+      field("start_tag", choice($._blocktranslate_tag, $._blocktrans_tag)),
+      alias(repeat($._node), $.block_body),
+      optional(seq(
+        $._plural_tag,
+        alias(repeat($._node), $.block_body),
+      )),
+      field("end_tag", choice($._endblocktranslate_tag, $._endblocktrans_tag)),
     ),
 
     _blocktranslate_arg: $ => choice(
