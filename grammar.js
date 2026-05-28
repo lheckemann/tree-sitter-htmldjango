@@ -60,7 +60,10 @@ module.exports = grammar({
     // Variables
     variable: $ => seq("{{", choice($.expression, $.string_literal), "}}"),
 
-    expression: $ => seq($.variable_name, repeat(seq("|", $.filter))),
+    expression: $ => choice(
+      seq($.variable_name, repeat(seq("|", $.filter))),
+      seq("_", "(", $.string_literal, ")"),
+    ),
     // Django variables cannot start with an "_", can contain one or more words separated by a "."
     variable_name: $ => /[a-zA-Z](\w+)?((\.?\w)+)?/,
 

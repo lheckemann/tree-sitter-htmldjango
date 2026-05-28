@@ -331,6 +331,10 @@
           "named": true
         },
         {
+          "type": "string_literal",
+          "named": true
+        },
+        {
           "type": "variable_name",
           "named": true
         }
@@ -917,6 +921,14 @@
     "named": false
   },
   {
+    "type": "(",
+    "named": false
+  },
+  {
+    "type": ")",
+    "named": false
+  },
+  {
     "type": ",",
     "named": false
   },
@@ -950,6 +962,10 @@
   },
   {
     "type": ">=",
+    "named": false
+  },
+  {
+    "type": "_",
     "named": false
   },
   {
