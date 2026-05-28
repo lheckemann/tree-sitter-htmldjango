@@ -49,8 +49,8 @@ module.exports = grammar({
     boolean: $ => token(seq(choice("True", "False"), /\s/)),
     string_literal: $ => seq(
       choice(
-        seq("'", repeat(/[^']/), "'"),
-        seq('"', repeat(/[^"]/), '"')
+        seq("'", repeat(/[^']|\\'/), "'"),
+        seq('"', repeat(/[^"]|\\"/), '"')
       ),
       repeat(seq("|", $.filter))
     ),
