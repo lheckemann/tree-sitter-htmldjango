@@ -217,6 +217,10 @@
         {
           "type": "string",
           "named": true
+        },
+        {
+          "type": "translated_string",
+          "named": true
         }
       ]
     }
@@ -265,6 +269,10 @@
         },
         {
           "type": "string",
+          "named": true
+        },
+        {
+          "type": "translated_string",
           "named": true
         }
       ]
@@ -635,6 +643,21 @@
     }
   },
   {
+    "type": "translated_string",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "string",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "unpaired_comment",
     "named": true,
     "fields": {}
@@ -725,6 +748,10 @@
   },
   {
     "type": "_",
+    "named": false
+  },
+  {
+    "type": "and",
     "named": false
   },
   {

@@ -62,8 +62,8 @@ const TAGS = [
     field("grouping_criterion", $.identifier),
     $.tag_binding
   )},
-  {name: "trans", args: $ => seq($.string, repeat($._translate_arg))},
-  {name: "translate", args: $ => seq($.string, repeat($._translate_arg))},
+  {name: "trans", args: $ => seq($.string, optional($._filter_chain), repeat($._translate_arg))},
+  {name: "translate", args: $ => seq($.string, optional($._filter_chain), repeat($._translate_arg))},
   ...BLOCKS,
   ...(BLOCKS.map(({name, end_args}) => ({name: `end${name}`, args: end_args}))),
 ]
@@ -152,8 +152,14 @@ module.exports = grammar({
       field("filter_name", $.identifier),
       optional(seq(":", $.filter_argument))
     ),
-    filter_argument: $ => choice($.identifier, $.attribute_path, $.string),
+    filter_argument: $ => choice(
+      $.identifier,
+      $.attribute_path,
+      $.string,
+      $.translated_string,
+    ),
 
+    _filter_chain: $ => repeat1(seq("|", $.filter)),
     _atom: $ => choice(
       $.special_identifier,
       $.attribute_path,
@@ -162,11 +168,12 @@ module.exports = grammar({
       $.boolean,
       $.string,
     ),
-    _filtered_atom: $ => seq($._atom, repeat(seq("|", $.filter))),
+    _filtered_atom: $ => seq($._atom, optional($._filter_chain)),
+    translated_string: $ => seq("_", "(", $.string, ")"),
     expression: $ => choice(
       $._filtered_atom,
       seq($._filtered_atom, $.operator, $.expression),
-      seq("_", "(", $.string, ")"),
+      $.translated_string,
     ),
 
     // Statements
@@ -251,7 +258,14 @@ module.exports = grammar({
       $._equals_binding
     ),
 
-    _with_bindings: $ => seq("with", field("binding", repeat1($.binding))),
+    _with_bindings: $ => seq(
+      "with",
+      field("binding", $.binding),
+      optional(seq(
+        optional(choice("and", ",")),
+        field("binding", $.binding),
+      ))
+    ),
 
     tag_binding: $ => seq("as", field("bound_name", $.identifier)),
 
@@ -263,9 +277,9 @@ module.exports = grammar({
       repeat(choice(
         $.expression,
         alias($._equals_binding, $.binding),
-        /\{[^%]+/
+        $.tag_binding,
+        /\{[^%]+/,
       )),
-      optional($.tag_binding),
       "%}",
     ),
 
