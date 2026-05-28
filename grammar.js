@@ -62,8 +62,8 @@ const TAGS = [
     field("grouping_criterion", $.identifier),
     $.tag_binding
   )},
-  {name: "trans", args: $ => seq($.string, optional($._filter_chain), repeat($._translate_arg))},
-  {name: "translate", args: $ => seq($.string, optional($._filter_chain), repeat($._translate_arg))},
+  {name: "trans", args: $ => seq(field("msgid", $.string), optional($._filter_chain), repeat($._translate_arg))},
+  {name: "translate", args: $ => seq(field("msgid", $.string), optional($._filter_chain), repeat($._translate_arg))},
   ...BLOCKS,
   ...(BLOCKS.map(({name, end_args}) => ({name: `end${name}`, args: end_args}))),
 ]

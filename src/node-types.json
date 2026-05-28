@@ -402,6 +402,16 @@
           }
         ]
       },
+      "msgid": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "string",
+            "named": true
+          }
+        ]
+      },
       "tag_name": {
         "multiple": false,
         "required": false,
