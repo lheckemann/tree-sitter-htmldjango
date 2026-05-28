@@ -47,33 +47,32 @@ module.exports = grammar({
     operator: $ => choice("==", "!=", "<", ">", "<=", ">="),
     number: $ => /[0-9]+/,
     boolean: $ => token(seq(choice("True", "False"), /\s/)),
-    string_literal: $ => seq(
-      choice(
-        seq("'", repeat(/[^']|\\'/), "'"),
-        seq('"', repeat(/[^"]|\\"/), '"')
-      ),
+    string_literal: $ => choice(
+      seq("'", repeat(/[^']|\\'/), "'"),
+      seq('"', repeat(/[^"]|\\"/), '"')
+    ),
+    string: $ => seq(
+      $.string_literal,
       repeat(seq("|", $.filter))
     ),
 
     identifier: $ => /\w+/,
 
     // Variables
-    variable: $ => seq("{{", choice($.expression, $.string_literal), "}}"),
+    variable: $ => seq("{{", choice($.expression, $.string), "}}"),
 
     expression: $ => choice(
       seq($.variable_name, repeat(seq("|", $.filter))),
-      seq("_", "(", $.string_literal, ")"),
+      seq("_", "(", $.string, ")"),
     ),
     // Django variables cannot start with an "_", can contain one or more words separated by a "."
     variable_name: $ => /[a-zA-Z]([\w-]+)?((\.?[\w-])+)?/,
 
-    filter: $ => seq($.filter_name, optional(seq(":", choice($.filter_argument, $._quoted_filter_argument)))),
-    filter_name: $ => $.identifier,
-    filter_argument: $ => seq($.identifier, repeat(seq(".", $.identifier))),
-    _quoted_filter_argument: $ => choice(
-      seq("'", alias(repeat(/[^']/), $.filter_argument), "'"),
-      seq('"', alias(repeat(/[^"]/), $.filter_argument), '"')
+    filter: $ => seq(
+      alias($.identifier, $.filter_name),
+      optional(seq(":", $.filter_argument))
     ),
+    filter_argument: $ => choice(seq($.identifier, repeat(seq(".", $.identifier))), $.string_literal),
 
     // Statements
     // unpaired type {% tag %}
@@ -158,7 +157,7 @@ module.exports = grammar({
         $.keyword_operator,
         $.number,
         $.boolean,
-        $.string_literal,
+        $.string,
         $.expression
       ),
       optional(choice(",", "="))
@@ -173,10 +172,10 @@ module.exports = grammar({
     ),
     unpaired_comment: $ => seq("{#", repeat(/.|\s/), repeat(seq(alias($.unpaired_comment, ""), repeat(/.|\s/))), "#}"),
     paired_comment: $ => seq(
-      alias("{%", ""), "comment", optional($.identifier), alias("%}", ""),
+      "{%", "comment", optional($.identifier), "%}",
       repeat(/.|\s/),
-      repeat(seq(alias($.paired_comment, ""), repeat(/.|\s/))),
-      alias("{%", ""), "endcomment", alias("%}", "")
+      repeat(seq($.paired_comment, repeat(/.|\s/))),
+      "{%", "endcomment", "%}",
     ),
 
     // All other content

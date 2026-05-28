@@ -1,143 +1,124 @@
 ==================
-variable
+variable_plain
 ==================
-
-<html>
-  {{ variable }}
-  {{ variable.item1.item2 }}
-  {{ variable|filter }}
-  {{ variable|filter:argument }}
-  {{ variable|filter:argument.item1.item2 }}
-  {{ variable|filter:"quoted argument" }}
-  {{ variable|filter:"quoted argument, with non-word characters!" }}
-  {{ variable|filter|filter:argument|filter:"quoted argument" }}
-</html>
-
+{{ variable }}
 ---
+(template (variable (expression (variable_name))))
 
+==================
+variable_path
+==================
+{{ variable.item1.item2 }}
+---
+(template (variable (expression (variable_name))))
+
+==================
+variable_basic_filter
+==================
+  {{ variable|filter }}
+---
 (template
-  (content)
   (variable
-    (variable_name))
+    (expression
+      (variable_name)
+      (filter
+        (filter_name)))))
+
+==================
+variable_filter_with_arg
+==================
+  {{ variable|filter:argument }}
+---
+(template
   (variable
-    (variable_name))
-  (variable
-    (variable_name)
-    (filter
-      (filter_name)))
-  (variable
-    (variable_name)
-    (filter
-      (filter_name)
-      (filter_argument)))
-  (variable
-    (variable_name)
-    (filter
-      (filter_name)
-      (filter_argument)))
-  (variable
+    (expression
     (variable_name)
     (filter
       (filter_name)
-      (filter_argument)))
+      (filter_argument (identifier))))))
+
+==================
+variable_filter_with_arg_path
+==================
+{{ variable|filter:argument.item1.item2 }}
+---
+(template
   (variable
-    (variable_name)
-    (filter
-      (filter_name)
-      (filter_argument)))
+    (expression
+      (variable_name)
+      (filter
+        (filter_name)
+        (filter_argument (identifier) (identifier) (identifier))))))
+
+
+==================
+variable_filter_with_quoted_args
+==================
+{{ variable|filter:"quoted argument" }}
+{{ variable|filter:"quoted argument, with non-word characters!" }}
+---
+(template
   (variable
-    (variable_name)
-    (filter
-      (filter_name))
-    (filter
-      (filter_name)
-      (filter_argument))
-    (filter
-      (filter_name)
-      (filter_argument)))
-  (content))
+    (expression
+      (variable_name)
+      (filter
+        (filter_name)
+        (filter_argument (string_literal)))))
+  (variable
+    (expression
+      (variable_name)
+      (filter
+        (filter_name)
+        (filter_argument (string_literal))))))
+
+==================
+variable_filter_with_everything
+==================
+{{ variable.attr1.attr2|filter|filter:argument|filter:argument.attr|filter:"quoted argument" }}
+---
+(template
+  (variable
+    (expression
+      (variable_name)
+      (filter (filter_name))
+      (filter (filter_name) (filter_argument (identifier)))
+      (filter (filter_name) (filter_argument (identifier) (identifier)))
+      (filter (filter_name) (filter_argument (string_literal))))))
 
 ==================
 string
 ==================
-
-<html>
-  {{ "string" }}
-  {{ 'string' }}
-  {{ "string"|filter }}
-  {{ 'string'|filter }}
-  {{ "string"|filter:argument }}
-  {{ 'string'|filter:argument }}
-  {{ "string"|filter:argument.item1.item2 }}
-  {{ 'string'|filter:argument.item1.item2 }}
-  {{ "string"|filter:"quoted argument" }}
-  {{ 'string'|filter:'quoted argument' }}
-  {{ "string"|filter:"quoted argument, with non-word characters!" }}
-  {{ 'string'|filter:'quoted argument, with non-word characters!' }}
-  {{ "string"|filter|filter:argument|filter:"quoted argument" }}
-  {{ 'string'|filter|filter:argument|filter:'quoted argument' }}
-</html>
-
+{{ "string" }}
+{{ 'string' }}
+{{ "string with \"quotes\"" }}
+{{ 'string with \'quotes\'' }}
 ---
-
 (template
-  (content)
-  (string)
-  (string)
-  (string
-    (filter
-      (filter_name)))
-  (string
-    (filter
-      (filter_name)))
-  (string
-    (filter
-      (filter_name)
-      (filter_argument)))
-  (string
-    (filter
-      (filter_name)
-      (filter_argument)))
-  (string
-    (filter
-      (filter_name)
-      (filter_argument)))
-  (string
-    (filter
-      (filter_name)
-      (filter_argument)))
-  (string
-    (filter
-      (filter_name)
-      (filter_argument)))
-  (string
-    (filter
-      (filter_name)
-      (filter_argument)))
-  (string
-    (filter
-      (filter_name)
-      (filter_argument)))
-  (string
-    (filter
-      (filter_name)
-      (filter_argument)))
-  (string
-    (filter
-      (filter_name))
-    (filter
-      (filter_name)
-      (filter_argument))
-    (filter
-      (filter_name)
-      (filter_argument)))
-  (string
-    (filter
-      (filter_name))
-    (filter
-      (filter_name)
-      (filter_argument))
-    (filter
-      (filter_name)
-      (filter_argument)))
-  (content))
+  (variable (expression (string_literal)))
+  (variable (expression (string_literal)))
+  (variable (expression (string_literal)))
+  (variable (expression (string_literal))))
+
+==================
+string_filter
+==================
+{{ "string"|filter }}
+{{ 'string'|filter }}
+---
+(template
+  (variable (expression (string_literal) (filter (filter_name)))
+  (variable (expression (string_literal) (filter (filter_name))))
+
+
+==================
+string_filter_with_everything
+==================
+{{ "string with \"quotes\"".attr1.attr2|filter|filter:argument|filter:argument.attr|filter:"quoted argument" }}
+---
+(template
+  (variable
+    (string_literal)
+      (filter (filter_name))
+      (filter (filter_name) (filter_argument (identifier)))
+      (filter (filter_name) (filter_argument (identifier) (identifier)))
+      (filter (filter_name) (filter_argument (string_literal))))))

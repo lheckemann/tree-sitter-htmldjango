@@ -1,33 +1,61 @@
 ==================
-comment
+unpaired_comment
 ==================
-
 <html>
   {# comment #}
   content
-  {% comment optional_label %}
-    content
-  {% endcomment %}
-  content
-  {# {{ variable }} {% statement %} {# comment #} content #}
-  content
-  {% comment optional_label %}
-  {% comment optional_label %}
-  {% comment optional_label %}
-  {% endcomment %}
-  {% endcomment %}
-  {% endcomment %}
-</html>
 
 ---
 
 (template
   (content)
   (unpaired_comment)
-  (content)
-  (paired_comment)
-  (content)
-  (unpaired_comment)
-  (content)
-  (paired_comment)
   (content))
+
+
+==================
+unpaired_comment_with_template_code
+==================
+{# {{ variable }} {% statement %} {# comment #} no longer in comment content #}
+
+---
+(template
+  (unpaired_comment)
+  (content))
+
+==================
+unlabelled_paired_comment
+==================
+  {% comment %}
+    content
+  {% endcomment %}
+---
+(template
+  (paired_comment))
+
+==================
+labelled_paired_comment
+==================
+  {% comment optional_label %}
+    content
+  {% endcomment %}
+---
+(template
+  (paired_comment (identifier)))
+
+==================
+nested_paired_comments
+==================
+  {% comment optional_label %}
+  {% comment %}
+  {% comment optional_label %}
+  {% endcomment %}
+  {% endcomment %}
+  {% endcomment %}
+---
+
+(template
+  (paired_comment
+    (identifier)
+    (paired_comment
+      (paired_comment (identifier)))))
