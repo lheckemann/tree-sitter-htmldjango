@@ -3,9 +3,14 @@ module.exports = grammar({
 
   word: $ => $.identifier,
 
+  reserved: {
+    "default": $ => ["if", "elif", "else"],
+  },
+
+
   conflicts: $ => [
     // elif tag can't be told apart from other tags in an if block without looking ahead
-    [$._if_block],
+    // [$.if_block],
     // `{% load a from b %}` can't be told apart from `{% load a b c %}` without looking ahead
     [$._load_tag],
   ],
@@ -32,6 +37,7 @@ module.exports = grammar({
         "off",
         "silent",
         "from",
+        "if",
       ),
       /\s/
     )),
@@ -90,13 +96,12 @@ module.exports = grammar({
       $._cycle_tag,
       $._include_tag,
       $._extends_tag,
-      $._general_expression_tag,
       $._load_tag,
       $._regroup_tag,
     ),
 
     _known_block: $ => choice(
-      $._if_block,
+      $.if_block,
       $._for_block,
       $._filter_block,
       $._verbatim_block,
@@ -116,51 +121,51 @@ module.exports = grammar({
       ];
 
       return choice(...tag_names.map((tag_name) => seq(
-        "{%", alias(tag_name, $.tag_name), repeat($.expression), "%}",
-        repeat($._node),
-        "{%", alias("end" + tag_name, $.tag_name), repeat($.expression), "%}")));
+        "{%", field("tag_name", tag_name), repeat($.expression), "%}",
+        alias(repeat($._node), $.block_body),
+        "{%", field("tag_name", "end" + tag_name), repeat($.expression), "%}")));
     },
 
-    _if_tag: $ => seq("{%", alias("if", $.tag_name), repeat($.expression), "%}"),
-    _elif_tag: $ => seq("{%", alias("elif", $.tag_name), repeat($.expression), "%}"),
-    _else_tag: $ => seq("{%", alias("else", $.tag_name), "%}"),
-    _endif_tag: $ => seq("{%", alias("endif", $.tag_name), "%}"),
+    _if_tag: $ => seq("{%", field("tag_name", "if"), repeat($.expression), "%}"),
+    _elif_tag: $ => seq("{%", field("tag_name", "elif"), repeat($.expression), "%}"),
+    _else_tag: $ => seq("{%", field("tag_name", "else"), "%}"),
+    _endif_tag: $ => seq(token(seq("{%", field("tag_name", "endif"))), "%}"),
 
-    _if_block: $ => seq(
-      $._if_tag,
-      alias(repeat($._node), $.if_body),
-      repeat((seq(
-        $._elif_tag,
-        alias(repeat1($._node), $.elif_body),
-      ))),
-      optional(seq(
-        $._else_tag,
-        alias(repeat1($._node), $.else_body),
+    if_block: $ => seq(
+      field("if_tag", alias($._if_tag, $.tag)),
+      alias(repeat($._node), $.block_body),
+      repeat(seq(
+        alias($._elif_tag, $.tag),
+        alias(repeat(choice($.variable, $._known_tag, $._known_block, $.content)), $.block_body),
       )),
-      $._endif_tag,
+      optional(seq(
+        field("else_tag", alias($._else_tag, $.tag)),
+        alias(repeat($._node), $.block_body),
+      )),
+      field("endif_tag", alias($._endif_tag, $.tag)),
     ),
 
-    _for_tag: $ => seq("{%", alias("for", $.tag_name), repeat($.expression), "%}"),
-    _empty_tag: $ => seq("{%", alias("empty", $.tag_name), repeat($.expression), "%}"),
-    _endfor_tag: $ => seq("{%", alias("endfor", $.tag_name), "%}"),
+    _for_tag: $ => seq("{%", field("tag_name", "for"), repeat($.expression), "%}"),
+    _empty_tag: $ => seq("{%", field("tag_name", "empty"), repeat($.expression), "%}"),
+    _endfor_tag: $ => seq("{%", field("tag_name", "endfor"), "%}"),
     _for_block: $ => seq(
-      $._for_tag,
+      alias($._for_tag, $.tag),
       alias(repeat($._node), $.for_body),
       optional(seq(
-        alias($._empty_tag, $.branch_statement),
+        alias($._empty_tag, $.tag),
         alias(repeat($._node), $.for_empty_body),
       )),
-      $._endfor_tag,
+      alias($._endfor_tag, $.tag),
     ),
 
     _filter_block: $ => seq(
-      "{%", alias("filter", $.tag_name), $.filter, repeat(seq("|", $.filter)), "%}",
+      "{%", field("tag_name", "filter"), $.filter, repeat(seq("|", $.filter)), "%}",
       repeat($._node),
-      "{%", alias("endfilter", $.tag_name), "%}"
+      "{%", field("tag_name", "endfilter"), "%}"
     ),
 
-    _verbatim_tag: $ => seq("{%", alias("verbatim", $.tag_name), "%}"),
-    _endverbatim_tag: $ => seq("{%", alias("endverbatim", $.tag_name), "%}"),
+    _verbatim_tag: $ => seq("{%", field("tag_name", "verbatim"), "%}"),
+    _endverbatim_tag: $ => seq("{%", field("tag_name", "endverbatim"), "%}"),
     _verbatim_block: $ => seq(
       $._verbatim_tag,
       alias(repeat(/[^{]+|\{[^%]/), $.verbatim_content),
@@ -169,24 +174,17 @@ module.exports = grammar({
 
     _include_tag: $ => seq(
       "{%",
-      alias("include", $.tag_name),
+      field("tag_name", "include"),
       choice($.string_literal, $.identifier),
       optional(seq("with", repeat($.binding), optional("only"))),
       "%}"
     ),
-    _extends_tag: $ => seq("{%", alias("extends", $.tag_name), choice($.string_literal, $.identifier), "%}"),
+    _extends_tag: $ => seq("{%", field("tag_name", "extends"), choice($.string_literal, $.identifier), "%}"),
 
-
-    _general_expression_tag: $ => seq(
-      "{%",
-      alias(choice("firstof"), $.tag_name),
-      repeat($.expression),
-      "%}",
-    ),
 
     _cycle_tag: $ => seq(
       "{%",
-      alias("cycle", $.tag_name),
+      field("tag_name", "cycle"),
       repeat1($.expression),
       optional(seq("as", $.identifier)),
       optional("silent"),
@@ -195,7 +193,7 @@ module.exports = grammar({
 
     _load_tag: $ => seq(
       "{%",
-      alias("load", $.tag_name),
+      field("tag_name", "load"),
       choice(
         repeat1(choice($.identifier, $.attribute_path)),
         seq(repeat1($.identifier), "from", $.attribute_path),
@@ -212,7 +210,7 @@ module.exports = grammar({
 
     _regroup_tag: $ => seq(
       "{%",
-      alias("regroup", $.tag_name),
+      field("tag_name", "regroup"),
       $.expression,
       "by",
       $.identifier,
@@ -225,7 +223,7 @@ module.exports = grammar({
 
     _unrecognised_tag: $ => seq(
       "{%",
-      alias($.identifier, $.tag_name),
+      field("tag_name", alias($.identifier, "")),
       repeat(choice(
         $.expression,
         /\{[^%]+/

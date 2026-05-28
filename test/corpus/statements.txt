@@ -7,8 +7,7 @@ csrf_token
 ---
 (template
   (content)
-  (tag
-    (tag_name))
+  (tag)
   (content))
 
 ==================
@@ -24,7 +23,6 @@ cycle
 (template
   (content)
   (tag
-    (tag_name)
     (expression (string_literal))
     (expression (identifier))
     (expression (string_literal))
@@ -43,8 +41,7 @@ debug
 
 (template
   (content)
-  (tag
-    (tag_name))
+  (tag)
   (content))
 
 ==================
@@ -59,9 +56,7 @@ extends
 
 (template
   (content)
-  (tag
-    (tag_name)
-    (string_literal))
+  (tag (string_literal))
   (content))
 
 ==================
@@ -77,7 +72,6 @@ firstof
 (template
   (content)
   (tag
-    (tag_name)
     (expression
       (identifier))
     (expression
@@ -100,7 +94,7 @@ include
 (template
   (content)
   (tag
-    (tag_name)
+    
     (string_literal)
     (binding (identifier) (expression (string_literal))))
   (content))
@@ -114,12 +108,12 @@ load
 
 (template
   (tag
-    (tag_name)
+    
     (identifier)
     (identifier)
     (attribute_path (identifier) (identifier)))
   (tag
-    (tag_name)
+    
     (identifier)
     (attribute_path (identifier) (identifier))))
 
@@ -130,7 +124,7 @@ lorem
 ---
 
 (template
-  (tag (tag_name)
+  (tag 
     (expression (number))
     (expression (identifier))
     (expression (identifier))))
@@ -148,7 +142,7 @@ now
 (template
   (content)
   (tag
-    (tag_name)
+    
     (expression (string_literal)))
   (content))
 
@@ -165,7 +159,7 @@ regroup
 (template
   (content)
   (tag
-    (tag_name)
+    
     (expression (identifier))
     (identifier)
     (identifier))
@@ -184,7 +178,7 @@ resetcycle
 (template
   (content)
   (tag
-    (tag_name)
+    
     (expression (identifier)))
   (content))
 
@@ -201,7 +195,7 @@ templatetag
 (template
   (content)
   (tag
-    (tag_name)
+    
     (expression (identifier)))
   (content))
 
@@ -218,7 +212,7 @@ url
 (template
   (content)
   (tag
-    (tag_name)
+    
     (expression (string_literal))
     (expression (identifier))
     (expression (identifier))
@@ -238,7 +232,7 @@ widthratio
 (template
   (content)
   (tag
-    (tag_name)
+    
     (expression (identifier))
     (expression (identifier))
     (expression (identifier)))
@@ -256,8 +250,7 @@ get_static_prefix
 
 (template
   (content)
-  (tag
-    (tag_name))
+  (tag )
   (content))
 
 ==================
@@ -272,8 +265,7 @@ get_media_prefix
 
 (template
   (content)
-  (tag
-    (tag_name))
+  (tag )
   (content))
 
 ==================
@@ -296,26 +288,16 @@ if
 
 (template
   (content)
-  (paired_statement
-    (tag_name)
-    (variable
-      (variable_name))
-    (content)
-    (branch_statement
-      (tag_name)
-      (variable
-        (variable_name)))
-    (content)
-    (branch_statement
-      (tag_name)
-      (variable
-        (variable_name)))
-    (content)
-    (branch_statement
-      (tag_name))
-    (content)
-    (tag_name)
-    (end_paired_statement))
+  (if_block
+    (tag (expression (identifier)))
+    (block_body (content))
+    (tag (expression (identifier)))
+    (block_body (content))
+    (tag (expression (identifier)))
+    (block_body (content))
+    (tag)
+    (block_body (content))
+    (tag))
   (content))
 
 ============
@@ -329,18 +311,11 @@ statement-in-elif
 ---
 
 (template
-  (paired_statement
-    (tag_name)
-    (variable
-      (variable_name))
-    (branch_statement
-      (tag_name)
-      (variable
-        (variable_name)))
-    (tag
-      (tag_name))
-    (tag_name)
-    (end_paired_statement))
+  (if_block
+    (tag (expression (identifier)))
+    (tag (expression (identifier)))
+    (block_body (tag))
+    (tag (expression (identifier))))
   (content))
 
 ==================
@@ -360,7 +335,7 @@ for
 (template
   (content)
   (paired_statement
-    (tag_name)
+    
     (variable
       (variable_name))
     (keyword_operator)
@@ -369,9 +344,9 @@ for
     (variable
       (variable_name))
     (branch_statement
-      (tag_name))
+      )
     (content)
-    (tag_name)
+    
     (end_paired_statement))
   (content))
 
@@ -390,11 +365,11 @@ block
 (template
   (content)
   (paired_statement
-    (tag_name)
+    
     (variable
       (variable_name))
     (content)
-    (tag_name)
+    
     (end_paired_statement))
   (content))
 
@@ -413,10 +388,10 @@ autoescape
 (template
   (content)
   (paired_statement
-    (tag_name)
+    
     (keyword)
     (content)
-    (tag_name)
+    
     (end_paired_statement))
   (content))
 
@@ -435,13 +410,13 @@ filter
 (template
   (content)
   (paired_statement
-    (tag_name)
+    
     (filter
       (filter_name))
     (filter
       (filter_name))
     (content)
-    (tag_name)
+    
     (end_paired_statement))
   (content))
 
@@ -462,20 +437,20 @@ ifchanged
 (template
   (content)
   (paired_statement
-    (tag_name)
+    
     (variable
       (variable_name))
     (keyword_operator)
     (variable
       (variable_name))
     (paired_statement
-      (tag_name)
+      
       (variable
         (variable_name))
       (content)
-      (tag_name)
+      
       (end_paired_statement))
-    (tag_name)
+    
     (end_paired_statement))
   (content))
 
@@ -494,9 +469,9 @@ blocktranslate
 (template
   (content)
   (paired_statement
-    (tag_name)
+    
     (content)
-    (tag_name)
+    
     (end_paired_statement))
   (content))
 
@@ -515,9 +490,9 @@ spaceless
 (template
   (content)
   (paired_statement
-    (tag_name)
+    
     (content)
-    (tag_name)
+    
     (end_paired_statement))
   (content))
 
@@ -536,11 +511,11 @@ verbatim
 (template
   (content)
   (paired_statement
-    (tag_name)
+    
     (variable
       (variable_name))
     (content)
-    (tag_name)
+    
     (variable
       (variable_name))
     (end_paired_statement))
@@ -561,7 +536,7 @@ with
 (template
   (content)
   (paired_statement
-    (tag_name)
+    
     (variable
       (variable_name))
     (number)
@@ -569,7 +544,7 @@ with
       (variable_name))
     (number)
     (content)
-    (tag_name)
+    
     (end_paired_statement))
   (content))
 
@@ -587,12 +562,12 @@ keywords
 (template
   (content)
   (tag
-    (tag_name)
+    
     (keyword)
     (variable
       (variable_name)))
   (tag
-    (tag_name)
+    
     (keyword)
     (variable
       (variable_name)))
@@ -620,20 +595,20 @@ custom
 (template
   (content)
   (tag
-    (tag_name))
+    )
   (tag
-    (tag_name))
+    )
   (content)
   (tag
-      (tag_name))
+      )
   (tag
-    (tag_name))
+    )
   (content)
   (tag
-      (tag_name))
+      )
   (tag
-    (tag_name))
+    )
   (content)
   (tag
-      (tag_name))
+      )
   (content))
