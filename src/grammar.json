@@ -336,7 +336,7 @@
     },
     "variable_name": {
       "type": "PATTERN",
-      "value": "[a-zA-Z](\\w+)?((\\.?\\w)+)?"
+      "value": "[a-zA-Z]([\\w-]+)?((\\.?[\\w-])+)?"
     },
     "filter": {
       "type": "SEQ",
