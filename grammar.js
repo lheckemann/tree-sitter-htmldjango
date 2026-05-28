@@ -3,7 +3,7 @@ module.exports = grammar({
 
   word: $ => $.identifier,
 
-  conflicts: $ => [[$.if_block]],
+  conflicts: $ => [[$._if_block]],
 
   rules: {
     template: $ => repeat(
@@ -17,15 +17,15 @@ module.exports = grammar({
       $.content
     ),
 
-    // General rules
-    keyword: $ => token(seq(
+    variable: $ => seq("{{", $.expression, "}}"),
+
+    // Expression "language"; django's template engine plays very fast-and-loose
+    // with these, so we need to be lenient...
+    special_identifier: $ => token(seq(
       choice(
         "on",
         "off",
-        "with",
-        "as",
         "silent",
-        "only",
         "from",
         "random",
         "by"
@@ -51,39 +51,52 @@ module.exports = grammar({
       seq("'", repeat(/[^']|\\'/), "'"),
       seq('"', repeat(/[^"]|\\"/), '"')
     ),
-    string: $ => seq(
-      $.string_literal,
-      repeat(seq("|", $.filter))
-    ),
 
     identifier: $ => /\w+/,
-
-    // Variables
-    variable: $ => seq("{{", choice($.expression, $.string), "}}"),
-
-    expression: $ => choice(
-      seq($.variable_name, repeat(seq("|", $.filter))),
-      seq("_", "(", $.string, ")"),
-    ),
-    // Django variables cannot start with an "_", can contain one or more words separated by a "."
-    variable_name: $ => /[a-zA-Z]([\w-]+)?((\.?[\w-])+)?/,
+    attribute_path: $ => seq($.identifier, repeat1(seq(".", $.identifier))),
 
     filter: $ => seq(
+      "|",
       alias($.identifier, $.filter_name),
       optional(seq(":", $.filter_argument))
     ),
-    filter_argument: $ => choice(seq($.identifier, repeat(seq(".", $.identifier))), $.string_literal),
+    filter_argument: $ => choice($.identifier, $.attribute_path, $.string_literal),
+
+    expression: $ => seq(
+      choice(
+        $.special_identifier,
+        $.attribute_path,
+        $.identifier,
+        $.number,
+        $.boolean,
+        $.string_literal,
+      ),
+      repeat($.filter)
+    ),
 
     // Statements
     // unpaired type {% tag %}
     // paired type   {% tag %}..{% endtag %}
     _statement: $ => choice(
+      $._known_block,
+      alias($._known_tag, $.tag),
+      alias($._unrecognised_tag, $.tag),
+    ),
+
+    _known_tag: $ => choice(
+      $._cycle_tag,
+      $._include_tag,
+      $._extends_tag,
+      $._general_expression_tag,
+    ),
+
+    _known_block: $ => choice(
+      $._if_block,
+      $._for_block,
+      $._filter_block,
+      $._verbatim_block,
+      $._filter_block,
       $.block,
-      $.if_block,
-      $.for_block,
-      $.verbatim_block,
-      $.filter_statement,
-      $.unpaired_statement
     ),
 
     block: $ => {
@@ -98,70 +111,91 @@ module.exports = grammar({
       ];
 
       return choice(...tag_names.map((tag_name) => seq(
-        "{%", alias(tag_name, $.tag_name), repeat($._attribute), "%}",
+        "{%", alias(tag_name, $.tag_name), repeat($.expression), "%}",
         repeat($._node),
-        "{%", alias("end" + tag_name, $.tag_name), repeat($._attribute), "%}")));
+        "{%", alias("end" + tag_name, $.tag_name), repeat($.expression), "%}")));
     },
 
-    if_tag: $ => seq("{%", alias("if", $.tag_name), repeat($._attribute), "%}"),
-    elif_tag: $ => seq("{%", alias("elif", $.tag_name), repeat($._attribute), "%}"),
-    else_tag: $ => seq("{%", alias("else", $.tag_name), "%}"),
-    endif_tag: $ => seq("{%", alias("endif", $.tag_name), "%}"),
+    _if_tag: $ => seq("{%", alias("if", $.tag_name), repeat($.expression), "%}"),
+    _elif_tag: $ => seq("{%", alias("elif", $.tag_name), repeat($.expression), "%}"),
+    _else_tag: $ => seq("{%", alias("else", $.tag_name), "%}"),
+    _endif_tag: $ => seq("{%", alias("endif", $.tag_name), "%}"),
 
-    if_block: $ => seq(
-      $.if_tag,
+    _if_block: $ => seq(
+      $._if_tag,
       alias(repeat($._node), $.if_body),
       repeat((seq(
-        $.elif_tag,
+        $._elif_tag,
         alias(repeat1($._node), $.elif_body),
       ))),
       optional(seq(
-        $.else_tag,
+        $._else_tag,
         alias(repeat1($._node), $.else_body),
       )),
-      $.endif_tag,
+      $._endif_tag,
     ),
 
-    for_tag: $ => seq("{%", alias("for", $.tag_name), repeat($._attribute), "%}"),
-    empty_tag: $ => seq("{%", alias("empty", $.tag_name), repeat($._attribute), "%}"),
-    endfor_tag: $ => seq("{%", alias("endfor", $.tag_name), "%}"),
-    for_block: $ => seq(
-      $.for_tag,
+    _for_tag: $ => seq("{%", alias("for", $.tag_name), repeat($.expression), "%}"),
+    _empty_tag: $ => seq("{%", alias("empty", $.tag_name), repeat($.expression), "%}"),
+    _endfor_tag: $ => seq("{%", alias("endfor", $.tag_name), "%}"),
+    _for_block: $ => seq(
+      $._for_tag,
       alias(repeat($._node), $.for_body),
       optional(seq(
-        alias($.empty_tag, $.branch_statement),
+        alias($._empty_tag, $.branch_statement),
         alias(repeat($._node), $.for_empty_body),
       )),
-      $.endfor_tag,
+      $._endfor_tag,
     ),
 
-    filter_statement: $ => seq(
+    _filter_block: $ => seq(
       "{%", alias("filter", $.tag_name), $.filter, repeat(seq("|", $.filter)), "%}",
       repeat($._node),
-      "{%", alias("endfilter", $.tag_name), alias("%}", $.end_paired_statement)
+      "{%", alias("endfilter", $.tag_name), "%}"
     ),
-    unpaired_statement: $ => seq("{%", alias($.identifier, $.tag_name), repeat(/[^%]+|%[^}]/), "%}"),
 
-    verbatim_tag: $ => seq("{%", alias("verbatim", $.tag_name), "%}"),
-    endverbatim_tag: $ => seq("{%", alias("endverbatim", $.tag_name), "%}"),
-    verbatim_block: $ => seq(
-      $.verbatim_tag,
+    _verbatim_tag: $ => seq("{%", alias("verbatim", $.tag_name), "%}"),
+    _endverbatim_tag: $ => seq("{%", alias("endverbatim", $.tag_name), "%}"),
+    _verbatim_block: $ => seq(
+      $._verbatim_tag,
       alias(repeat(/[^{]+|\{[^%]/), $.verbatim_content),
-      $.endverbatim_tag,
+      $._endverbatim_tag,
     ),
 
-    _attribute: $ => seq(
-      choice(
-        $.keyword,
-        $.operator,
-        $.keyword_operator,
-        $.number,
-        $.boolean,
-        $.string,
-        $.expression
-      ),
-      optional(choice(",", "="))
+    _include_tag: $ => seq(
+      "{%",
+      alias("include", $.tag_name),
+      choice($.string_literal, $.identifier),
+      optional(seq("with", repeat($.binding), optional("only"))),
+      "%}"
     ),
+    _extends_tag: $ => seq("{%", alias("extends", $.tag_name), choice($.string_literal, $.identifier), "%}"),
+
+
+    _general_expression_tag: $ => seq(
+      "{%",
+      alias(choice("firstof"), $.tag_name),
+      repeat($.expression),
+      "%}",
+    ),
+
+    _cycle_tag: $ => seq(
+      "{%",
+      alias("cycle", $.tag_name),
+      repeat1($.expression),
+      optional(seq("as", $.identifier)),
+      optional("silent"),
+      "%}"
+    ),
+
+    binding: $ => choice(
+      seq($.expression, "as", $.identifier),
+      seq($.identifier, "=", $.expression),
+    ),
+
+    _with_bindings: $ => seq("with", repeat1($.binding)),
+
+    _unrecognised_tag: $ => seq("{%", alias($.identifier, $.tag_name), repeat(/[^%]+|%[^}]/), "%}"),
 
     // Comments
     // unpaired type {# comment #}

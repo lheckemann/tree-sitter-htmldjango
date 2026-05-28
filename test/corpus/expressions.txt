@@ -3,14 +3,14 @@ variable_plain
 ==================
 {{ variable }}
 ---
-(template (variable (expression (variable_name))))
+(template (variable (expression (identifier))))
 
 ==================
 variable_path
 ==================
 {{ variable.item1.item2 }}
 ---
-(template (variable (expression (variable_name))))
+(template (variable (expression (attribute_path (identifier) (identifier) (identifier)))))
 
 ==================
 variable_basic_filter
@@ -20,9 +20,8 @@ variable_basic_filter
 (template
   (variable
     (expression
-      (variable_name)
-      (filter
-        (filter_name)))))
+      (identifier)
+      (filter (filter_name)))))
 
 ==================
 variable_filter_with_arg
@@ -32,7 +31,7 @@ variable_filter_with_arg
 (template
   (variable
     (expression
-    (variable_name)
+    (identifier)
     (filter
       (filter_name)
       (filter_argument (identifier))))))
@@ -45,10 +44,10 @@ variable_filter_with_arg_path
 (template
   (variable
     (expression
-      (variable_name)
+      (identifier)
       (filter
         (filter_name)
-        (filter_argument (identifier) (identifier) (identifier))))))
+        (filter_argument (attribute_path (identifier) (identifier) (identifier)))))))
 
 
 ==================
@@ -60,13 +59,13 @@ variable_filter_with_quoted_args
 (template
   (variable
     (expression
-      (variable_name)
+      (identifier)
       (filter
         (filter_name)
         (filter_argument (string_literal)))))
   (variable
     (expression
-      (variable_name)
+      (identifier)
       (filter
         (filter_name)
         (filter_argument (string_literal))))))
@@ -79,10 +78,10 @@ variable_filter_with_everything
 (template
   (variable
     (expression
-      (variable_name)
+      (attribute_path (identifier) (identifier) (identifier))
       (filter (filter_name))
       (filter (filter_name) (filter_argument (identifier)))
-      (filter (filter_name) (filter_argument (identifier) (identifier)))
+      (filter (filter_name) (filter_argument (attribute_path (identifier) (identifier))))
       (filter (filter_name) (filter_argument (string_literal))))))
 
 ==================
@@ -106,19 +105,20 @@ string_filter
 {{ 'string'|filter }}
 ---
 (template
-  (variable (expression (string_literal) (filter (filter_name)))
   (variable (expression (string_literal) (filter (filter_name))))
+  (variable (expression (string_literal) (filter (filter_name)))))
 
 
 ==================
 string_filter_with_everything
 ==================
-{{ "string with \"quotes\"".attr1.attr2|filter|filter:argument|filter:argument.attr|filter:"quoted argument" }}
+{{ "string with \"quotes\""|filter|filter:argument|filter:argument.attr|filter:"quoted argument" }}
 ---
 (template
   (variable
-    (string_literal)
-      (filter (filter_name))
-      (filter (filter_name) (filter_argument (identifier)))
-      (filter (filter_name) (filter_argument (identifier) (identifier)))
-      (filter (filter_name) (filter_argument (string_literal))))))
+    (expression
+      (string_literal)
+        (filter (filter_name))
+        (filter (filter_name) (filter_argument (identifier)))
+        (filter (filter_name) (filter_argument (attribute_path (identifier) (identifier))))
+        (filter (filter_name) (filter_argument (string_literal))))))

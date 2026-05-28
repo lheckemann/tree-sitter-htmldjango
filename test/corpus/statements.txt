@@ -1,16 +1,13 @@
 ==================
 csrf_token
 ==================
-
 <html>
   {% csrf_token %}
 </html>
-
 ---
-
 (template
   (content)
-  (unpaired_statement
+  (tag
     (tag_name))
   (content))
 
@@ -26,16 +23,12 @@ cycle
 
 (template
   (content)
-  (unpaired_statement
+  (tag
     (tag_name)
-    (string)
-    (variable
-      (variable_name))
-    (string)
-    (keyword)
-    (variable
-      (variable_name))
-    (keyword))
+    (expression (string_literal))
+    (expression (identifier))
+    (expression (string_literal))
+    (identifier))
   (content))
 
 ==================
@@ -50,7 +43,7 @@ debug
 
 (template
   (content)
-  (unpaired_statement
+  (tag
     (tag_name))
   (content))
 
@@ -66,9 +59,9 @@ extends
 
 (template
   (content)
-  (unpaired_statement
+  (tag
     (tag_name)
-    (string))
+    (string_literal))
   (content))
 
 ==================
@@ -83,15 +76,15 @@ firstof
 
 (template
   (content)
-  (unpaired_statement
+  (tag
     (tag_name)
-    (variable
-      (variable_name))
-    (variable
-      (variable_name))
-    (variable
-      (variable_name))
-    (string))
+    (expression
+      (identifier))
+    (expression
+      (identifier))
+    (expression
+      (identifier))
+    (expression (string_literal)))
   (content))
 
 ==================
@@ -106,14 +99,10 @@ include
 
 (template
   (content)
-  (unpaired_statement
+  (tag
     (tag_name)
-    (string)
-    (keyword)
-    (variable
-      (variable_name))
-    (string)
-    (keyword))
+    (string_literal)
+    (binding (identifier) (expression (string_literal))))
   (content))
 
 ==================
@@ -128,7 +117,7 @@ load
 
 (template
   (content)
-  (unpaired_statement
+  (tag
     (tag_name)
     (variable
       (variable_name))
@@ -151,7 +140,7 @@ lorem
 
 (template
   (content)
-  (unpaired_statement
+  (tag
     (tag_name)
     (number)
     (variable
@@ -171,7 +160,7 @@ now
 
 (template
   (content)
-  (unpaired_statement
+  (tag
     (tag_name)
     (string))
   (content))
@@ -188,7 +177,7 @@ regroup
 
 (template
   (content)
-  (unpaired_statement
+  (tag
     (tag_name)
     (variable
       (variable_name))
@@ -212,7 +201,7 @@ resetcycle
 
 (template
   (content)
-  (unpaired_statement
+  (tag
     (tag_name)
     (variable
       (variable_name)))
@@ -230,7 +219,7 @@ templatetag
 
 (template
   (content)
-  (unpaired_statement
+  (tag
     (tag_name)
     (variable
       (variable_name)))
@@ -248,7 +237,7 @@ url
 
 (template
   (content)
-  (unpaired_statement
+  (tag
     (tag_name)
     (string)
     (variable
@@ -272,7 +261,7 @@ widthratio
 
 (template
   (content)
-  (unpaired_statement
+  (tag
     (tag_name)
     (variable
       (variable_name))
@@ -294,7 +283,7 @@ get_static_prefix
 
 (template
   (content)
-  (unpaired_statement
+  (tag
     (tag_name))
   (content))
 
@@ -310,7 +299,7 @@ get_media_prefix
 
 (template
   (content)
-  (unpaired_statement
+  (tag
     (tag_name))
   (content))
 
@@ -375,7 +364,7 @@ statement-in-elif
       (tag_name)
       (variable
         (variable_name)))
-    (unpaired_statement
+    (tag
       (tag_name))
     (tag_name)
     (end_paired_statement))
@@ -624,12 +613,12 @@ keywords
 
 (template
   (content)
-  (unpaired_statement
+  (tag
     (tag_name)
     (keyword)
     (variable
       (variable_name)))
-  (unpaired_statement
+  (tag
     (tag_name)
     (keyword)
     (variable
@@ -657,21 +646,21 @@ custom
 
 (template
   (content)
-  (unpaired_statement
+  (tag
     (tag_name))
-  (unpaired_statement
+  (tag
     (tag_name))
   (content)
-  (unpaired_statement
+  (tag
       (tag_name))
-  (unpaired_statement
+  (tag
     (tag_name))
   (content)
-  (unpaired_statement
+  (tag
       (tag_name))
-  (unpaired_statement
+  (tag
     (tag_name))
   (content)
-  (unpaired_statement
+  (tag
       (tag_name))
   (content))
