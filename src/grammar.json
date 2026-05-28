@@ -1324,8 +1324,8 @@
         {
           "type": "REPEAT",
           "content": {
-            "type": "SYMBOL",
-            "name": "_attribute"
+            "type": "PATTERN",
+            "value": "[^%]+|%[^}]"
           }
         },
         {

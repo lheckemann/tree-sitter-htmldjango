@@ -141,7 +141,7 @@ module.exports = grammar({
       repeat($._node),
       "{%", alias("endfilter", $.tag_name), alias("%}", $.end_paired_statement)
     ),
-    unpaired_statement: $ => seq("{%", alias($.identifier, $.tag_name), repeat($._attribute), "%}"),
+    unpaired_statement: $ => seq("{%", alias($.identifier, $.tag_name), repeat(/[^%]+|%[^}]/), "%}"),
 
     verbatim_tag: $ => seq("{%", alias("verbatim", $.tag_name), "%}"),
     endverbatim_tag: $ => seq("{%", alias("endverbatim", $.tag_name), "%}"),
