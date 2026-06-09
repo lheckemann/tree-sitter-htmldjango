@@ -9,7 +9,7 @@ const BLOCKS = [
   {name: "autoescape", args: $ => choice("on", "off")},
   {
     name: "block",
-    args: $ => field("block_name", $.identifier),
+    args: $ => seq(field("block_name", $.identifier), optional(seq("with", repeat1($.binding)))),
     end_args: $ => optional(field("block_name", $.identifier))
   },
   {name: "ifchanged", args: $ => repeat($.expression)},
